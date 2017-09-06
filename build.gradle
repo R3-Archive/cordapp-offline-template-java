@@ -11,7 +11,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "net.corda.plugins:publish-utils:$corda_gradle_plugins_version"
+        classpath fileTree(dir: 'lib/dependencies' , include: '*.jar')
         classpath "net.corda.plugins:cordformation:$corda_gradle_plugins_version"
         classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
     }
@@ -23,14 +23,13 @@ repositories {
     mavenCentral()
     maven { url 'https://dl.bintray.com/kotlin/exposed' }
     maven { url 'https://jitpack.io' }
+    flatDir { dirs 'lib/dependencies' }
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'net.corda.plugins.publish-utils'
 apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
-apply plugin: 'maven-publish'
 
 sourceSets {
     main {
@@ -46,6 +45,9 @@ sourceSets {
 }
 
 dependencies {
+    // Do not add your own cordapp dependencies to this folder - they will not be included in the cordapp JAR
+    cordaCompile fileTree(dir: 'lib/dependencies' , include: '*.jar')
+
     testCompile "junit:junit:$junit_version"
 
     // Corda integration dependencies
@@ -93,28 +95,19 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     }
 }
 
-idea {
-    module {
-        downloadJavadoc = true // defaults to false
-        downloadSources = true
-    }
-}
-
-publishing {
-    publications {
-        jarAndSources(MavenPublication) {
-            from components.java
-            artifactId 'cordapp-name-goes-here'
-
-            artifact sourceJar
-            artifact javadocJar
-        }
-    }
-}
-
 task runTemplateClient(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.template.client.TemplateClient'
     args 'localhost:10006'
 }
 
+/**
+ * This builds the distribution package for the offline template and can only be run when online
+ */
+task gatherDependencies(type: Copy) {
+    into "lib/dependencies"
+    from buildscript.configurations.classpath
+    from configurations.runtime
+    from configurations.testRuntime
+    from configurations.quasar
+}
