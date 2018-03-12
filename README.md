@@ -2,7 +2,7 @@
 
 # CorDapp Template: Offline Version
 
-This is a version of the V2 CorDapp template that has been adapted for use on networks with limited
+This is a version of the CorDapp template that has been adapted for use on networks with limited
 connectivity to the outside world.
 
 ## Pre-requisites:
@@ -21,6 +21,6 @@ Once online, run the following command from the root of the project:
     
 This will gather all the dependencies required to run the template offline into the `lib/depdencies/` folder.
 
-### Usage
+### Building the CorDapp
 
 See https://github.com/corda/cordapp-template-java#building-the-cordapp-template.
